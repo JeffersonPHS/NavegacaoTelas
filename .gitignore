@@ -9,6 +9,17 @@ dist/
 web-build/
 expo-env.d.ts
 
+
+
+
+# Configurações do VS Code (Editor local)
+.vscode/
+
+# Configurações da IA 
+.claude/
+
+
+
 # Native
 .kotlin/
 *.orig.*
