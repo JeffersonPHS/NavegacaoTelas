@@ -1,3 +1,6 @@
+import { ISeditora } from "./ISeditora"
+
+
 export interface ISmanga {
     id: number
     capa: string
@@ -8,4 +11,5 @@ export interface ISmanga {
     genero: string
     autor: string
     artista: string
+    editora: ISeditora
 }

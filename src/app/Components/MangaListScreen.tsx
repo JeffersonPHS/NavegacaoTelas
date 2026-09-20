@@ -4,17 +4,29 @@ import { StyleSheet, TouchableOpacity, Text, View, ScrollView } from 'react-nati
 
 import Manga from '@/app/Components/Manga'; 
 import { ISmanga } from '@/app/Components/ISmanga'; 
+import {ISeditora} from '@/app/Components/ISeditora'
 import MangaModal from '@/app/Components/MangaModal'; 
 
 export default function MangaListScreen() {
   
   const [mangas, setMangas] = useState< ISmanga[]>([]);
+
+  const [editora, setEditora] = useState< ISeditora[]>([]);
   
   
   const [modalVisible, setModalVisible] = useState(false);
 
   
-  const onAdd = (nome: string, descricao: string, capa: string, ano: string, tipoObra: string, genero: string, artista: string, autor: string) => {
+  const onAdd = (nome: string, descricao: string, capa: string, ano: string, tipoObra: string, genero: string, artista: string, autor: string, nomeeditora: string, paisorigem: string, siteoficial: string) => {
+    
+    const newEditora: ISeditora = {
+      id: Math.random(), 
+      nomeeditora: nomeeditora,
+      paisorigem: paisorigem,
+      siteoficial: siteoficial
+    };
+    
+    
     const newManga: ISmanga = {
       id: Math.random(), 
       name: nome,
@@ -24,14 +36,16 @@ export default function MangaListScreen() {
       tipoObra: tipoObra,
       genero: genero,
       artista: artista,
-      autor: autor
-       
+      autor: autor,
+      editora: newEditora
     };
 
+  
    
+    setEditora([...editora, newEditora]);
     setMangas([...mangas, newManga]);
     setModalVisible(false); 
-  };
+    };
 
   const openModal = () => {
     setModalVisible(true);
@@ -71,8 +85,14 @@ export default function MangaListScreen() {
             ano= {manga.ano}
             artista={manga.artista}
             autor= {manga.autor}
+            nomeeditora= {manga.editora.nomeeditora}
+            paisorigem={manga.editora.paisorigem}
+            siteoficial={manga.editora.siteoficial}
           />
-        ))}
+        )
+        
+        
+        )}
       </View>
 
     

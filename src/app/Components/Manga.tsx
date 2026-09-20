@@ -14,7 +14,15 @@ export type MangaProps = {
 }
 
 
-export default function Manga({capa, name, ano, description, tipoObra, genero, autor, artista}: MangaProps) {
+export type editoraProps = {
+    nomeeditora: string
+    paisorigem: string
+    siteoficial: string
+}
+
+type MangaCompleto = MangaProps & editoraProps;
+
+export default function Manga({capa, name, ano, description, tipoObra, genero, autor, artista, nomeeditora, paisorigem, siteoficial}: MangaCompleto) {
 
     return (
 
@@ -34,6 +42,12 @@ export default function Manga({capa, name, ano, description, tipoObra, genero, a
         <Text>{genero}</Text>
         <Text>{artista}</Text>
         <Text>{autor}</Text>
+
+
+
+        <Text>{nomeeditora}</Text>
+        <Text>{paisorigem}</Text>
+        <Text>{siteoficial}</Text>
        
     
       </View>

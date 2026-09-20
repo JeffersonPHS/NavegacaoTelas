@@ -3,7 +3,7 @@ import { Text, View, StyleSheet, TouchableOpacity, Modal, TextInput } from 'reac
 
 export type MangaModalProps = {
   visible: boolean;
-  onAdd: (nome: string, descricao: string, capa: string, ano: string, tipoObra: string, genero: string, artista: string, autor: string) => void;
+  onAdd: (nome: string, descricao: string, capa: string, ano: string, tipoObra: string, genero: string, artista: string, autor: string, nomeeditora: string, paisorigem: string, siteoficial: string) => void;
   onCancel: () => void;
 };
 
@@ -17,9 +17,12 @@ export default function MangaModal({ visible, onAdd, onCancel }: MangaModalProps
  const [artista, setArtista] = useState('');
  const [autor, setAutor] = useState('');
  const [capa, setCapa] = useState('');
+const [nomeeditora, setNomeeditora] = useState('');
+const [paisorigem, setPaisorigem] = useState('');
+const [siteoficial, setSiteoficil] = useState('');
  
   const handleAdd = () => {
-   onAdd(nome, descricao, capa, ano, tipoObra, genero, artista, autor);
+   onAdd(nome, descricao, capa, ano, tipoObra, genero, artista, autor, nomeeditora, paisorigem, siteoficial );
     
     
     setNome(''); 
@@ -30,6 +33,9 @@ export default function MangaModal({ visible, onAdd, onCancel }: MangaModalProps
     setGenero('');
     setArtista('');
     setAutor('');
+    setNomeeditora('');
+    setPaisorigem('');
+    setSiteoficil('');
   };
 
   return (
@@ -50,7 +56,9 @@ export default function MangaModal({ visible, onAdd, onCancel }: MangaModalProps
      <TextInput value={artista} onChangeText={setArtista} placeholder="Nome do artista" placeholderTextColor="gray" />
       <TextInput value={autor} onChangeText={setAutor} placeholder="Nome do autor" placeholderTextColor="gray" />
        <TextInput value={capa} onChangeText={setCapa} placeholder="Link da capa" placeholderTextColor="gray" />
-
+         <TextInput value={nomeeditora} onChangeText={setNomeeditora} placeholder="Nome da Editora" placeholderTextColor="gray" />
+          <TextInput value={paisorigem} onChangeText={setPaisorigem} placeholder="Nome da Editora" placeholderTextColor="gray" />
+           <TextInput value={siteoficial} onChangeText={setSiteoficil} placeholder="Nome da Editora" placeholderTextColor="gray" />
           <View>
           
             <TouchableOpacity onPress={onCancel}>
