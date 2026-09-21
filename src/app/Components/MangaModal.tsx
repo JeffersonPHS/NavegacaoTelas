@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Modal, TextInput } from 'react-native';
 
 export type MangaModalProps = {
   visible: boolean;
+  mangaEditando: any;
   onAdd: (nome: string, descricao: string, capa: string, ano: string, tipoObra: string, genero: string, artista: string, autor: string, nomeeditora: string, paisorigem: string, siteoficial: string) => void;
   onCancel: () => void;
 };
 
-export default function MangaModal({ visible, onAdd, onCancel }: MangaModalProps) {
+export default function MangaModal({ visible, onAdd, onCancel, mangaEditando }: MangaModalProps) {
   
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -19,8 +20,35 @@ export default function MangaModal({ visible, onAdd, onCancel }: MangaModalProps
  const [capa, setCapa] = useState('');
 const [nomeeditora, setNomeeditora] = useState('');
 const [paisorigem, setPaisorigem] = useState('');
-const [siteoficial, setSiteoficil] = useState('');
+const [siteoficial, setSiteoficial] = useState('');
  
+
+
+useEffect(() => {
+    if (mangaEditando) {
+      setNome(mangaEditando.name);
+      setDescricao(mangaEditando.description);
+      setCapa(mangaEditando.capa);
+      setAno(mangaEditando.ano);
+      settipoObra(mangaEditando.tipoObra);
+      setGenero(mangaEditando.genero);
+      setArtista(mangaEditando.artista);
+      setAutor(mangaEditando.autor);
+      setNomeeditora(mangaEditando.editora?.nomeeditora || '');
+      setPaisorigem(mangaEditando.editora?.paisorigem || '');
+      setSiteoficial(mangaEditando.editora?.siteoficial || '');
+    } 
+    
+    else {
+      
+      setNome(''); setDescricao(''); setCapa(''); setAno(''); settipoObra('');
+      setGenero(''); setArtista(''); setAutor(''); setNomeeditora('');
+      setPaisorigem(''); setSiteoficial('');
+    }
+  }, [mangaEditando, visible]);
+
+
+
   const handleAdd = () => {
    onAdd(nome, descricao, capa, ano, tipoObra, genero, artista, autor, nomeeditora, paisorigem, siteoficial );
     
@@ -35,7 +63,7 @@ const [siteoficial, setSiteoficil] = useState('');
     setAutor('');
     setNomeeditora('');
     setPaisorigem('');
-    setSiteoficil('');
+    setSiteoficial('');
   };
 
   return (
@@ -57,8 +85,8 @@ const [siteoficial, setSiteoficil] = useState('');
       <TextInput value={autor} onChangeText={setAutor} placeholder="Nome do autor" placeholderTextColor="gray" />
        <TextInput value={capa} onChangeText={setCapa} placeholder="Link da capa" placeholderTextColor="gray" />
          <TextInput value={nomeeditora} onChangeText={setNomeeditora} placeholder="Nome da Editora" placeholderTextColor="gray" />
-          <TextInput value={paisorigem} onChangeText={setPaisorigem} placeholder="Nome da Editora" placeholderTextColor="gray" />
-           <TextInput value={siteoficial} onChangeText={setSiteoficil} placeholder="Nome da Editora" placeholderTextColor="gray" />
+          <TextInput value={paisorigem} onChangeText={setPaisorigem} placeholder="Nome do pais" placeholderTextColor="gray" />
+           <TextInput value={siteoficial} onChangeText={setSiteoficial} placeholder="Nome do site oficial" placeholderTextColor="gray" />
           <View>
           
             <TouchableOpacity onPress={onCancel}>

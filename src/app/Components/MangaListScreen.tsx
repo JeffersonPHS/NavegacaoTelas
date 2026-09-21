@@ -1,26 +1,29 @@
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, Text, View, ScrollView } from 'react-native';
 
-
 import Manga from '@/app/Components/Manga'; 
 import { ISmanga } from '@/app/Components/ISmanga'; 
-import {ISeditora} from '@/app/Components/ISeditora'
+import { ISeditora } from '@/app/Components/ISeditora';
 import MangaModal from '@/app/Components/MangaModal'; 
 
 export default function MangaListScreen() {
   
-  const [mangas, setMangas] = useState< ISmanga[]>([]);
 
-  const [editora, setEditora] = useState< ISeditora[]>([]);
-  
-  
+  const [mangas, setMangas] = useState<ISmanga[]>([]);
+
+
   const [modalVisible, setModalVisible] = useState(false);
+  
+  
+  const [mangaEditando, setMangaEditando] = useState<any>(null);
 
   
   const onAdd = (nome: string, descricao: string, capa: string, ano: string, tipoObra: string, genero: string, artista: string, autor: string, nomeeditora: string, paisorigem: string, siteoficial: string) => {
     
+   
     const newEditora: ISeditora = {
-      id: Math.random(), 
+     
+      id: mangaEditando ? mangaEditando.editora.id : Math.random(), 
       nomeeditora: nomeeditora,
       paisorigem: paisorigem,
       siteoficial: siteoficial
@@ -28,7 +31,8 @@ export default function MangaListScreen() {
     
     
     const newManga: ISmanga = {
-      id: Math.random(), 
+     
+      id: mangaEditando ? mangaEditando.id : Math.random(), 
       name: nome,
       description: descricao,
       capa: capa,  
@@ -37,36 +41,56 @@ export default function MangaListScreen() {
       genero: genero,
       artista: artista,
       autor: autor,
-      editora: newEditora
+      editora: newEditora 
     };
+
+
+    
+   
+    if (mangaEditando) {
+      const listaAtualizada = mangas.map((manga) => manga.id === mangaEditando.id ? newManga : manga);
+      setMangas(listaAtualizada);
+    } 
+    
+    
+    else {
+      
+      setMangas([...mangas, newManga]);
+    }
+    
+    
+    setModalVisible(false); 
+    setMangaEditando(null); 
+  };
+    
+ 
+  const onDelete = (idapagar: number) => {
+   
+    const listaAtualizada = mangas.filter((manga) => manga.id !== idapagar);
+    setMangas(listaAtualizada);
+  };
 
   
-   
-    setEditora([...editora, newEditora]);
-    setMangas([...mangas, newManga]);
-    setModalVisible(false); 
-    };
-
   const openModal = () => {
+    setMangaEditando(null);
     setModalVisible(true);
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
+  
+  const openEditModal = (mangaParaEditar: ISmanga) => {
+    setMangaEditando(mangaParaEditar);
+    setModalVisible(true);
   };
 
-
-
-
-
+  
+  const closeModal = () => {
+    setModalVisible(false);
+    setMangaEditando(null);
+  };
 
   return (
-
-
-
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.headerContainer}>
-       
         <TouchableOpacity onPress={openModal}>
           <Text style={styles.headerButton}>+ Adicionar Mangá</Text>
         </TouchableOpacity>
@@ -77,27 +101,29 @@ export default function MangaListScreen() {
         {mangas.map((manga) => (
           <Manga 
             key={manga.id} 
+            id={manga.id}
             name={manga.name} 
             description={manga.description} 
-            capa= {manga.capa}
+            capa={manga.capa}
             tipoObra={manga.tipoObra}
-            genero= {manga.genero}
-            ano= {manga.ano}
+            genero={manga.genero}
+            ano={manga.ano}
             artista={manga.artista}
-            autor= {manga.autor}
-            nomeeditora= {manga.editora.nomeeditora}
-            paisorigem={manga.editora.paisorigem}
-            siteoficial={manga.editora.siteoficial}
+            autor={manga.autor}
+           
+            nomeeditora={manga.editora?.nomeeditora}
+            paisorigem={manga.editora?.paisorigem}
+            siteoficial={manga.editora?.siteoficial}
+            onDelete={() => onDelete(manga.id)}
+            onEdit={() => openEditModal(manga)} 
           />
-        )
-        
-        
-        )}
+        ))}
+
       </View>
 
-    
       <MangaModal 
         visible={modalVisible} 
+        mangaEditando={mangaEditando} 
         onCancel={closeModal} 
         onAdd={onAdd} 
       />
