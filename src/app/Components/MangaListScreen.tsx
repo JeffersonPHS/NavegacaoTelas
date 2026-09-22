@@ -5,33 +5,27 @@ import Manga from '@/app/Components/Manga';
 import { ISmanga } from '@/app/Components/ISmanga'; 
 import { ISeditora } from '@/app/Components/ISeditora';
 import MangaModal from '@/app/Components/MangaModal'; 
+import MangaTelaScreen from '@/app/Components/MangaTelaScreen'; 
 
 export default function MangaListScreen() {
   
-
   const [mangas, setMangas] = useState<ISmanga[]>([]);
-
-
-  const [modalVisible, setModalVisible] = useState(false);
   
+
+  const [telaAtual, setTelaAtual] = useState<'lista' | 'telaForm'>('lista');
   
   const [mangaEditando, setMangaEditando] = useState<any>(null);
 
-  
   const onAdd = (nome: string, descricao: string, capa: string, ano: string, tipoObra: string, genero: string, artista: string, autor: string, nomeeditora: string, paisorigem: string, siteoficial: string) => {
     
-   
     const newEditora: ISeditora = {
-     
       id: mangaEditando ? mangaEditando.editora.id : Math.random(), 
       nomeeditora: nomeeditora,
       paisorigem: paisorigem,
       siteoficial: siteoficial
     };
     
-    
     const newManga: ISmanga = {
-     
       id: mangaEditando ? mangaEditando.id : Math.random(), 
       name: nome,
       description: descricao,
@@ -44,50 +38,51 @@ export default function MangaListScreen() {
       editora: newEditora 
     };
 
-
-    
-   
     if (mangaEditando) {
+     
       const listaAtualizada = mangas.map((manga) => manga.id === mangaEditando.id ? newManga : manga);
       setMangas(listaAtualizada);
-    } 
-    
-    
-    else {
+    } else {
       
       setMangas([...mangas, newManga]);
     }
     
-    
-    setModalVisible(false); 
+    setTelaAtual('lista'); 
     setMangaEditando(null); 
   };
     
- 
   const onDelete = (idapagar: number) => {
-   
     const listaAtualizada = mangas.filter((manga) => manga.id !== idapagar);
     setMangas(listaAtualizada);
   };
 
-  
   const openModal = () => {
     setMangaEditando(null);
-    setModalVisible(true);
+    setTelaAtual('telaForm'); 
   };
 
-  
   const openEditModal = (mangaParaEditar: ISmanga) => {
     setMangaEditando(mangaParaEditar);
-    setModalVisible(true);
+    setTelaAtual('telaForm'); 
   };
 
-  
   const closeModal = () => {
-    setModalVisible(false);
+    setTelaAtual('lista');
     setMangaEditando(null);
   };
 
+  
+  if (telaAtual === 'telaForm') {
+    return (
+      <MangaTelaScreen 
+        mangaEditando={mangaEditando} 
+        onCancel={closeModal} 
+        onAdd={onAdd} 
+      />
+    );
+  }
+
+  
   return (
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.headerContainer}>
@@ -97,7 +92,6 @@ export default function MangaListScreen() {
       </View>
 
       <View style={styles.container}>
-      
         {mangas.map((manga) => (
           <Manga 
             key={manga.id} 
@@ -110,7 +104,6 @@ export default function MangaListScreen() {
             ano={manga.ano}
             artista={manga.artista}
             autor={manga.autor}
-           
             nomeeditora={manga.editora?.nomeeditora}
             paisorigem={manga.editora?.paisorigem}
             siteoficial={manga.editora?.siteoficial}
@@ -118,15 +111,7 @@ export default function MangaListScreen() {
             onEdit={() => openEditModal(manga)} 
           />
         ))}
-
       </View>
-
-      <MangaModal 
-        visible={modalVisible} 
-        mangaEditando={mangaEditando} 
-        onCancel={closeModal} 
-        onAdd={onAdd} 
-      />
     </ScrollView>
   );
 }
