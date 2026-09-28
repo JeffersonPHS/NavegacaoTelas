@@ -12,4 +12,5 @@ export interface ISmanga {
     autor: string
     artista: string
     editora: ISeditora
+    localizacaoGPS?: string
 }
