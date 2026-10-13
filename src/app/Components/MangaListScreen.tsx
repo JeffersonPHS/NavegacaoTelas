@@ -1,31 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { StyleSheet, TouchableOpacity, Text, View, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import { useRouter, useFocusEffect } from 'expo-router'; 
 
 import Manga from '@/app/Components/Manga'; 
 import { ISmanga } from '@/app/Components/ISmanga'; 
-import { ISeditora } from '@/app/Components/ISeditora';
-import MangaModal from '@/app/Components/MangaModal'; 
-import MangaTelaScreen from '@/app/Components/MangaTelaScreen'; 
 
 export default function MangaListScreen() {
-  
   const [mangas, setMangas] = useState<ISmanga[]>([]);
-  const [telaAtual, setTelaAtual] = useState<'lista' | 'telaForm'>('lista');
-  const [mangaEditando, setMangaEditando] = useState<any>(null);
+  const router = useRouter(); 
 
-  
-  useEffect(() => {
-    carregarMangasSalvos(); 
-  }, []);
-
-
-
-
-
-
-
-
+  // useFocusEffect: Atualiza a lista toda vez que você volta pra essa tela
+  useFocusEffect(
+    useCallback(() => {
+      carregarMangasSalvos(); 
+    }, [])
+  );
 
   const carregarMangasSalvos = async () => {
     try {
@@ -38,7 +28,6 @@ export default function MangaListScreen() {
     }
   };
 
-  
   const salvarNoAsyncStorage = async (novaLista: ISmanga[]) => {
     try {
       await AsyncStorage.setItem('@mangas_salvos', JSON.stringify(novaLista)); 
@@ -47,87 +36,21 @@ export default function MangaListScreen() {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const onAdd = (nome: string, descricao: string, capa: string, ano: string, tipoObra: string, genero: string, artista: string, autor: string, nomeeditora: string, paisorigem: string, siteoficial: string, localizacaoGPS?: string) => {
-    
-    const newEditora: ISeditora = {
-      id: mangaEditando ? mangaEditando.editora.id : Math.random(), 
-      nomeeditora: nomeeditora,
-      paisorigem: paisorigem,
-      siteoficial: siteoficial
-    };
-    
-    const newManga: ISmanga = {
-      id: mangaEditando ? mangaEditando.id : Math.random(), 
-      name: nome,
-      description: descricao,
-      capa: capa,  
-      ano: ano, 
-      tipoObra: tipoObra,
-      genero: genero,
-      artista: artista,
-      autor: autor,
-      editora: newEditora,
-      localizacaoGPS: localizacaoGPS
-    
-    };
-
-    let listaAtualizada;
-    if (mangaEditando) {
-      listaAtualizada = mangas.map((manga) => manga.id === mangaEditando.id ? newManga : manga);
-    } else {
-      listaAtualizada = [...mangas, newManga];
-    }
-
-    setMangas(listaAtualizada);
-    salvarNoAsyncStorage(listaAtualizada); 
-    
-    setTelaAtual('lista');
-    setMangaEditando(null); 
-  };
-    
-  const onDelete = (idapagar: number) => {
+  const onDelete = async (idapagar: number) => {
     const listaAtualizada = mangas.filter((manga) => manga.id !== idapagar);
     setMangas(listaAtualizada);
-    salvarNoAsyncStorage(listaAtualizada); 
+    await salvarNoAsyncStorage(listaAtualizada); 
   };
+
 
   const openModal = () => {
-    setMangaEditando(null);
-    setTelaAtual('telaForm');
+    router.push('/Components/MangaTelaScreen'); 
   };
 
+  
   const openEditModal = (mangaParaEditar: ISmanga) => {
-    setMangaEditando(mangaParaEditar);
-    setTelaAtual('telaForm');
+    router.push({ pathname: '/Components/MangaTelaScreen', params: { idEditando: mangaParaEditar.id } });
   };
-
-  const closeModal = () => {
-    setTelaAtual('lista');
-    setMangaEditando(null);
-  };
-
-  if (telaAtual === 'telaForm') {
-    return (
-      <MangaTelaScreen 
-        mangaEditando={mangaEditando} 
-        onCancel={closeModal} 
-        onAdd={onAdd} 
-      />
-    );
-  }
 
   return (
     <ScrollView style={styles.scrollContainer}>

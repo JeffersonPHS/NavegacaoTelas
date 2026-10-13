@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
 import * as Location from 'expo-location'; 
+import { useRouter, useLocalSearchParams } from 'expo-router'; 
+import { ISmanga } from '@/app/Components/ISmanga';
+import { ISeditora } from '@/app/Components/ISeditora';
 
 
-export type MangaTelaProps = {
-  mangaEditando: any;
-  onAdd: (nome: string, descricao: string, capa: string, ano: string, tipoObra: string, genero: string, artista: string, autor: string, nomeeditora: string, paisorigem: string, siteoficial: string, localizacaoGPS?: string) => void;
-  onCancel: () => void;
-};
 
 
-export default function MangaTelaScreen({ onAdd, onCancel, mangaEditando }: MangaTelaProps) {
+
+
+export default function MangaTelaScreen() {
+  const router = useRouter(); 
+
+  const params = useLocalSearchParams();
   
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -23,40 +27,36 @@ export default function MangaTelaScreen({ onAdd, onCancel, mangaEditando }: Mang
   const [nomeeditora, setNomeeditora] = useState('');
   const [paisorigem, setPaisorigem] = useState('');
   const [siteoficial, setSiteoficial] = useState('');
-  
-  
   const [localizacao, setLocalizacao] = useState('Nenhuma localização obtida');
  
+  
   useEffect(() => {
-    if (mangaEditando) {
-      setNome(mangaEditando.name);
-      setDescricao(mangaEditando.description);
-      setCapa(mangaEditando.capa);
-      setAno(mangaEditando.ano);
-      settipoObra(mangaEditando.tipoObra);
-      setGenero(mangaEditando.genero);
-      setArtista(mangaEditando.artista);
-      setAutor(mangaEditando.autor);
-      setNomeeditora(mangaEditando.editora?.nomeeditora || '');
-      setPaisorigem(mangaEditando.editora?.paisorigem || '');
-      setSiteoficial(mangaEditando.editora?.siteoficial || '');
-   
-      if (mangaEditando.localizacaoGPS) {
-        setLocalizacao(mangaEditando.localizacaoGPS);
-      }
-    } else {
-      setNome(''); setDescricao(''); setCapa(''); setAno(''); settipoObra('');
-      setGenero(''); setArtista(''); setAutor(''); setNomeeditora('');
-      setPaisorigem(''); setSiteoficial(''); setLocalizacao('Nenhuma localização obtida');
+    if (params.idEditando) {
+      carregarObraParaEditar(Number(params.idEditando));
     }
-  }, [mangaEditando]);
+  }, [params.idEditando]);
 
- 
-
-
-
-
-
+  const carregarObraParaEditar = async (id: number) => {
+    const dados = await AsyncStorage.getItem('@mangas_salvos');
+    if (dados) {
+      const lista: ISmanga[] = JSON.parse(dados);
+      const obra = lista.find(m => m.id === id);
+      if (obra) {
+        setNome(obra.name);
+        setDescricao(obra.description);
+        setCapa(obra.capa);
+        setAno(obra.ano);
+        settipoObra(obra.tipoObra);
+        setGenero(obra.genero);
+        setArtista(obra.artista);
+        setAutor(obra.autor);
+        setNomeeditora(obra.editora?.nomeeditora || '');
+        setPaisorigem(obra.editora?.paisorigem || '');
+        setSiteoficial(obra.editora?.siteoficial || '');
+        if (obra.localizacaoGPS) setLocalizacao(obra.localizacaoGPS);
+      }
+    }
+  };
 
   const pegarLocalizacaoGPS = async () => {
     try {
@@ -67,7 +67,7 @@ export default function MangaTelaScreen({ onAdd, onCancel, mangaEditando }: Mang
       }
 
       let currentLocation = await Location.getCurrentPositionAsync({});
-      const coords = `Lati: ${currentLocation.coords.latitude.toFixed(4)}, Long: ${currentLocation.coords.longitude.toFixed(4)}`;
+      const coords = `Lat: ${currentLocation.coords.latitude.toFixed(4)}, Lon: ${currentLocation.coords.longitude.toFixed(4)}`;
       setLocalizacao(coords);
       Alert.alert('GPS Capturado!', coords);
     } catch (error) {
@@ -75,21 +75,52 @@ export default function MangaTelaScreen({ onAdd, onCancel, mangaEditando }: Mang
     }
   };
 
-
-
-
-
-
-  const handleAdd = () => {
+ 
+  const handleAdd = async () => {
+    const newEditora: ISeditora = {
+      id: Math.random(), 
+      nomeeditora: nomeeditora,
+      paisorigem: paisorigem,
+      siteoficial: siteoficial
+    };
     
-    onAdd(nome, descricao, capa, ano, tipoObra, genero, artista, autor, nomeeditora, paisorigem, siteoficial, localizacao);
+    const newManga: ISmanga = {
+      id: params.idEditando ? Number(params.idEditando) : Math.random(), 
+      name: nome,
+      description: descricao,
+      capa: capa,  
+      ano: ano, 
+      tipoObra: tipoObra,
+      genero: genero,
+      artista: artista,
+      autor: autor,
+      editora: newEditora,
+      localizacaoGPS: localizacao
+    };
+
+    try {
+      const dadosSalvos = await AsyncStorage.getItem('@mangas_salvos');
+      let listaAtualizada: ISmanga[] = dadosSalvos ? JSON.parse(dadosSalvos) : [];
+
+      if (params.idEditando) {
+        listaAtualizada = listaAtualizada.map((manga) => manga.id === newManga.id ? newManga : manga);
+      } else {
+        listaAtualizada.push(newManga);
+      }
+
+      await AsyncStorage.setItem('@mangas_salvos', JSON.stringify(listaAtualizada)); 
+     
+      router.replace('/'); 
+    } catch (error) {
+      console.log('Erro', error);
+    }
   };
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: 'white', padding: 20 }}>
       
       <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', marginTop: 40 }}>
-        {mangaEditando ? 'Editar Obra' : 'Nova Obra'}
+        {params.idEditando ? 'Editar Obra' : 'Nova Obra'}
       </Text>
 
       <TextInput style={styles.input} value={nome} onChangeText={setNome} placeholder="Nome da Obra" placeholderTextColor="gray" />
@@ -104,7 +135,6 @@ export default function MangaTelaScreen({ onAdd, onCancel, mangaEditando }: Mang
       <TextInput style={styles.input} value={paisorigem} onChangeText={setPaisorigem} placeholder="País de origem" placeholderTextColor="gray" />
       <TextInput style={styles.input} value={siteoficial} onChangeText={setSiteoficial} placeholder="Site oficial" placeholderTextColor="gray" />
       
-      
       <View style={{ marginVertical: 15, padding: 10, backgroundColor: '#e6f2ff', borderRadius: 5 }}>
         <TouchableOpacity onPress={pegarLocalizacaoGPS}>
           <Text style={{ color: '#007BFF', fontWeight: 'bold', textAlign: 'center' }}>📍 Capturar Localização Atual (GPS)</Text>
@@ -113,13 +143,13 @@ export default function MangaTelaScreen({ onAdd, onCancel, mangaEditando }: Mang
       </View>
 
       <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 20, marginBottom: 50 }}>
-        <TouchableOpacity onPress={onCancel}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Text style={{ backgroundColor: 'rgba(226, 13, 13, 0.13)', fontWeight: 'bold', padding: 15, borderRadius: 5 }}>Voltar</Text>
         </TouchableOpacity>
         
         <TouchableOpacity onPress={handleAdd}>
           <Text style={{ backgroundColor: 'rgba(13, 226, 77, 0.13)', fontWeight: 'bold', padding: 15, borderRadius: 5 }}>
-            {mangaEditando ? "Salvar" : "Adicionar"}
+            {params.idEditando ? "Salvar" : "Adicionar"}
           </Text>
         </TouchableOpacity>
       </View>
